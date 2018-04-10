@@ -31,6 +31,10 @@ done
 I_DIR=`dirname $INPUT`
 O_DIR=`dirname $OUTPUT`
 
+(>&2 echo "input file: "$INPUT)
+(>&2 echo "output file: "$OUTPUT)
+(>&2 echo "output dir: "$O_DIR)
+
 # prepare
 rm -f $O_DIR/.localmr.tmp.m.in.part.*
 rm -f $O_DIR/.localmr.tmp.m.out.part.*
@@ -38,7 +42,9 @@ rm -f $O_DIR/.localmr.tmp.m.out.part.*
 # map
 split -n l/$NMAP $INPUT $O_DIR/.localmr.tmp.m.in.part.
 for m_in_part in `ls $O_DIR/.localmr.tmp.m.in.part.*`; do
-  map_proc="cat $O_DIR/$m_in_part | $MAPPER > $O_DIR/.localmr.tmp.m.out.part.`basename $m_in_part`"
+  bn_m_in_part=`basename $m_in_part`
+  (>&2 echo "start mapper part: "$O_DIR/$bn_m_in_part)
+  map_proc="cat $O_DIR/$bn_m_in_part | $MAPPER > $O_DIR/.localmr.tmp.m.out.part.$bn_m_in_part"
   bash -c "$map_proc" &
 done
 wait
