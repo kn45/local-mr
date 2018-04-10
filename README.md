@@ -1,6 +1,6 @@
 # local-mr
 
-Make streaming map-reduce task run on local machine with with multiprocessing.
+A simple tool for streaming map-reduce task running on local machine with with multiprocessing.
 
 
 ## Example
