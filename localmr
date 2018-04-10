@@ -1,0 +1,54 @@
+#!/bin/sh
+
+for i in "$@"; do
+case $i in
+  -i=*|--input=*)
+  INPUT="${i#*=}"
+  ;;
+  -o=*|--output=*)
+  OUTPUT="${i#*=}"
+  ;;
+  -m=*|--mapper=*)
+  MAPPER="${i#*=}"
+  ;;
+  -a=*|--nmap=*)
+  NMAP="${i#*=}"
+  ;;
+  -r=*|--reducer=*)
+  REDUCER="${i#*=}"
+  ;;
+  -b=*|--nred=*)
+  NRED="${i#*=}"
+  ;;
+  --)
+  shift
+  ;;
+  *)
+  # unknown option
+  ;;
+esac
+done
+I_DIR=`dirname $INPUT`
+O_DIR=`dirname $OUTPUT`
+
+# prepare
+rm -f $O_DIR/.localmr.tmp.m.in.part.*
+rm -f $O_DIR/.localmr.tmp.m.out.part.*
+
+# map
+split -n l/$NMAP $INPUT $O_DIR/.localmr.tmp.m.in.part.
+for m_in_part in `ls $O_DIR/.localmr.tmp.m.in.part.*`; do
+  map_proc="cat $O_DIR/$m_in_part | $MAPPER > $O_DIR/.localmr.tmp.m.out.part.`basename $m_in_part`"
+  bash -c "$map_proc" &
+done
+wait
+
+# reduce
+# @todo
+
+# merge
+cat $O_DIR/.localmr.tmp.m.out.part.* > $OUTPUT
+
+# cleanup
+rm -f $O_DIR/.localmr.tmp.m.in.part.*
+rm -f $O_DIR/.localmr.tmp.m.out.part.*
