@@ -4,9 +4,11 @@ A simple tool for streaming map-reduce task running on local machine with with m
 
 
 ## Example
-`bash example.sh`  
+```shell
+bash example.sh
+```  
 or
-```
+```shell
 localmr \
 --input=./test_mr_input \
 --output=./test_mr_output \
