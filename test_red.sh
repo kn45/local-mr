@@ -1,6 +1,6 @@
 rm ./test_mr_input
 for i in {1..20}; do
-  echo $RANDOM"	test	line" >> ./test_mr_input
+  echo ${RANDOM:0:1}"	test	line" >> ./test_mr_input
 done
 
 ./localmr \

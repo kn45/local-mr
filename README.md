@@ -1,12 +1,18 @@
 # local-mr
 
 A simple tool for streaming map-reduce task running on local machine with with multiprocessing.  
-Only support mapper for now.
 
 
 ## Example
 `bash example.sh`
+or
+```
+localmr \
+--input=./test_mr_input \
+--output=./test_mr_output \
+--mapper="awk '{print \$0}'" \
+--reducer="cat" \
+--nmap=2 \
+--nred=5
+```
 
-
-## TODO
-Add support for partitioner and reducer.

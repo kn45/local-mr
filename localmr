@@ -72,25 +72,34 @@ else  # REDUCE-INVOLVED TASK
       function get_hash(fld) {
         cmd = sprintf(\"echo %s | md5sum\", fld);
         cmd | getline output;
+        close(cmd)
         split(output, arr, \" \");
         return sprintf(\"%d\", \"0x\"arr[1])
       }
       '
       "
     echo $map_proc > $W_DIR/m.exec.$part_id
-    (>&2 echo "Start Mapper-"$part_id)
+    (>&2 echo "Start Mapper-"$part_id"...")
     bash $W_DIR/m.exec.$part_id &
   done
   wait
   # Partition
+  (>&2 echo "Start Shuffle...")
   for bucket_id in `ls -1 $W_DIR/m.out.* | awk -F'.' '{print $NF}' | sort | uniq`; do
-    cat $W_DIR/m.out.*.$bucket_id > $W_DIR/r.in.$bucket_id
+    cat $W_DIR/m.out.*.$bucket_id | sort -t$'\t' -k1,1 > $W_DIR/r.in.$bucket_id &
   done
+  wait
   # Reduce
   for r_in_part in `ls $W_DIR/r.in.*`; do
-    echo $r_in_part
+    part_bn=`basename $r_in_part`
+    part_id=${r_in_part##*.}
+    red_proc="cat $W_DIR/$part_bn | $REDUCER > $W_DIR/r.out.$part_id"
+    (>&2 echo "Start Reducer-"$part_id"...")
+    bash -c "$red_proc" &
   done
-
+  wait
+  # Output to single file
+  cat $W_DIR/r.out.* > $OUTPUT
   # Cleanup
   rm -rf $W_DIR
 fi
