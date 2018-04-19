@@ -8,7 +8,7 @@ A simple tool for streaming map-reduce task running on local machine with with m
 bash example.sh
 ```  
 or
-```
+```python
 localmr \
 --input=./test_mr_input \
 --output=./test_mr_output \
