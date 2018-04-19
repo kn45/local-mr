@@ -30,31 +30,69 @@ esac
 done
 I_DIR=`dirname $INPUT`
 O_DIR=`dirname $OUTPUT`
+W_DIR=$O_DIR/.localmr_tmp
 
-(>&2 echo "input file: "$INPUT)
-(>&2 echo "output file: "$OUTPUT)
-(>&2 echo "output dir: "$O_DIR)
+(>&2 echo "Input file: "$INPUT)
+(>&2 echo "Output file: "$OUTPUT)
+(>&2 echo "Number of mapper: "$NMAP)
+(>&2 echo "Number of reducer: "$NRED)
 
 # prepare
-rm -f $O_DIR/.localmr.tmp.m.in.part.*
-rm -f $O_DIR/.localmr.tmp.m.out.part.*
+rm -rf $W_DIR
+mkdir $W_DIR
 
-# map
-split -n l/$NMAP $INPUT $O_DIR/.localmr.tmp.m.in.part.
-for m_in_part in `ls $O_DIR/.localmr.tmp.m.in.part.*`; do
-  bn_m_in_part=`basename $m_in_part`
-  (>&2 echo "start mapper part: "$O_DIR/$bn_m_in_part)
-  map_proc="cat $O_DIR/$bn_m_in_part | $MAPPER > $O_DIR/.localmr.tmp.m.out.part.$bn_m_in_part"
-  bash -c "$map_proc" &
-done
-wait
+if [ -z "$REDUCER" ]; then  # MAP-ONLY TASK
+  # Map
+  split -d -n l/$NMAP $INPUT $W_DIR/m.in.
+  for m_in_part in `ls $W_DIR/m.in.*`; do
+    part_bn=`basename $m_in_part`
+    part_id=${m_in_part##*.}
+    map_proc="cat $W_DIR/$part_bn | $MAPPER > $W_DIR/m.out.$part_id"
+    (>&2 echo "Start Mapper-"$part_id)
+    bash -c "$map_proc" &
+  done
+  wait
+  # Output to single file
+  cat $W_DIR/m.out.* > $OUTPUT
+  # Cleanup
+  rm -rf $W_DIR
+else  # REDUCE-INVOLVED TASK
+  # Map
+  split -d -n l/$NMAP $INPUT $W_DIR/m.in.
+  for m_in_part in `ls $W_DIR/m.in.*`; do
+    part_bn=`basename $m_in_part`
+    part_id=${m_in_part##*.}
+    map_proc="cat $W_DIR/$part_bn | $MAPPER | awk --non-decimal-data
+      -F'\t' -v nred=$NRED -v partid=$part_id -v wdir=$W_DIR
+      '
+      {
+        bucket_id = int(get_hash(\$1)) % nred;
+        print \$0 > wdir\"/m.out.\"partid\".\"bucket_id
+      }
+      function get_hash(fld) {
+        cmd = sprintf(\"echo %s | md5sum\", fld);
+        cmd | getline output;
+        split(output, arr, \" \");
+        return sprintf(\"%d\", \"0x\"arr[1])
+      }
+      '
+      "
+    echo $map_proc > $W_DIR/m.exec.$part_id
+    (>&2 echo "Start Mapper-"$part_id)
+    bash $W_DIR/m.exec.$part_id &
+  done
+  wait
+  # Partition
+  for bucket_id in `ls -1 $W_DIR/m.out.* | awk -F'.' '{print $NF}' | sort | uniq`; do
+    cat $W_DIR/m.out.*.$bucket_id > $W_DIR/r.in.$bucket_id
+  done
+  # Reduce
+  for r_in_part in `ls $W_DIR/r.in.*`; do
+    echo $r_in_part
+  done
 
-# reduce
-# @todo
+  # Cleanup
+  rm -rf $W_DIR
+fi
 
-# merge
-cat $O_DIR/.localmr.tmp.m.out.part.* > $OUTPUT
-
-# cleanup
-rm -f $O_DIR/.localmr.tmp.m.in.part.*
-rm -f $O_DIR/.localmr.tmp.m.out.part.*
+(>&2 echo "All done! Output file: "$OUTPUT)
