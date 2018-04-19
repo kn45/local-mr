@@ -4,7 +4,7 @@ A simple tool for streaming map-reduce task running on local machine with with m
 
 
 ## Example
-```sh
+```shell
 bash example.sh
 ```  
 or
