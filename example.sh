@@ -8,5 +8,5 @@ done
 --output=./test_mr_output \
 --mapper="awk '{print \$0}'" \
 --reducer="cat" \
---nmap=2 \
---nred=5
+--nmapper=2 \
+--nreducer=5

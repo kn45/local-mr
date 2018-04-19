@@ -11,13 +11,13 @@ case $i in
   -m=*|--mapper=*)
   MAPPER="${i#*=}"
   ;;
-  -a=*|--nmap=*)
+  -a=*|--nmapper=*|--nmap=*)
   NMAP="${i#*=}"
   ;;
   -r=*|--reducer=*)
   REDUCER="${i#*=}"
   ;;
-  -b=*|--nred=*)
+  -b=*|--nreducer=*|--nred=*)
   NRED="${i#*=}"
   ;;
   --)
