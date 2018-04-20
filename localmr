@@ -85,6 +85,11 @@ else  # REDUCE-INVOLVED TASK
   wait
   # Partition
   (>&2 echo "Start Shuffle...")
+  for frag_file in `ls -1 $W_DIR/m.out.*`; do
+    frag_bn=`basename $frag_file`
+    sort -t$'\t' -k1,1 $W_DIR/$frag_bn > $W_DIR/$frag_bn.s
+  done
+
   for bucket_id in `ls -1 $W_DIR/m.out.* | awk -F'.' '{print $NF}' | sort | uniq`; do
     cat $W_DIR/m.out.*.$bucket_id | sort -t$'\t' -k1,1 > $W_DIR/r.in.$bucket_id &
   done
