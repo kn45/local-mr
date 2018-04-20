@@ -84,9 +84,8 @@ else  # REDUCE-INVOLVED TASK
   done
   wait
   # Partition
-  (>&2 echo "Start Shuffle...")
   for bucket_id in `ls -1 $W_DIR/m.out.* | awk -F'.' '{print $NF}' | sort | uniq`; do
-    (>&2 echo "Start Shuffle bucket-"$bucket_id)
+    (>&2 echo "Start Shuffle bucket-"$bucket_id"...")
     (
       for bucket_file in `ls -1 $W_DIR/m.out.*.$bucket_id`; do
         bf_bn=`basename $bucket_file`
