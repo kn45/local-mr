@@ -7,6 +7,12 @@ done
 --input=./test_mr_input \
 --output=./test_mr_output \
 --mapper="awk '{print \$0}'" \
+--nmapper=2
+
+./localmr \
+--input=./test_mr_input \
+--output=./test_mr_output \
+--mapper="awk '{print \$0}'" \
 --reducer="cat" \
 --nmapper=2 \
 --nreducer=5

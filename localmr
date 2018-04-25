@@ -28,6 +28,11 @@ case $i in
   ;;
 esac
 done
+
+if [ -z "$NRED" ]; then
+  NRED="None"
+fi
+
 I_DIR=`dirname $INPUT`
 O_DIR=`dirname $OUTPUT`
 W_DIR=$O_DIR/.localmr_tmp
