@@ -1,4 +1,4 @@
-# local-mr
+# Local MR
 
 A simple tool for streaming map-reduce task running on local machine with with multiprocessing.  
 `export LC_COLLATE=C` to ensure sort behavior.
