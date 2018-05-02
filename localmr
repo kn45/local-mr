@@ -3,7 +3,7 @@
 for i in "$@"; do
 case $i in
   -i=*|--input=*)
-  INPUT="${i#*=}"
+  INPUT="${i#*=} "$INPUT
   ;;
   -o=*|--output=*)
   OUTPUT="${i#*=}"
@@ -46,9 +46,10 @@ W_DIR=$O_DIR/.localmr_tmp
 rm -rf $W_DIR
 mkdir $W_DIR
 
+
 if [ -z "$REDUCER" ]; then  # MAP-ONLY TASK
   # Map
-  split -d -n l/$NMAP $INPUT $W_DIR/m.in.
+  cat $INPUT | split -d -n r/$NMAP - $W_DIR/m.in.
   for m_in_part in `ls $W_DIR/m.in.*`; do
     part_bn=`basename $m_in_part`
     part_id=${m_in_part##*.}
@@ -63,7 +64,7 @@ if [ -z "$REDUCER" ]; then  # MAP-ONLY TASK
   rm -rf $W_DIR
 else  # REDUCE-INVOLVED TASK
   # Map
-  split -d -n l/$NMAP $INPUT $W_DIR/m.in.
+  cat $INPUT | split -d -n r/$NMAP - $W_DIR/m.in.
   for m_in_part in `ls $W_DIR/m.in.*`; do
     part_bn=`basename $m_in_part`
     part_id=${m_in_part##*.}

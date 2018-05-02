@@ -22,7 +22,8 @@ A simple tool for streaming map-reduce task running on local machine with with m
 ## Example
 ```shell
 localmr \
---input=./test_mr_input \
+--input=./test_mr_input1 \
+--input=./test_mr_input2 \
 --output=./test_mr_output \
 --mapper="awk '{print \$0}'" \
 --reducer="cat" \
