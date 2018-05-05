@@ -116,4 +116,4 @@ else  # REDUCE-INVOLVED TASK
   rm -rf $W_DIR
 fi
 
-(>&2 echo "All done! Output file: "$OUTPUT)
+(>&2 echo "MR Job Finish! Output file: "$OUTPUT)
