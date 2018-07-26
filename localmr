@@ -35,7 +35,8 @@ fi
 
 I_DIR=`dirname $INPUT`
 O_DIR=`dirname $OUTPUT`
-W_DIR=$O_DIR/.localmr_tmp
+O_FN=`basename $OUTPUT`
+W_DIR=$O_DIR/.localmr_tmp_$O_FN
 
 (>&2 echo "Input file: "$INPUT)
 (>&2 echo "Output file: "$OUTPUT)
