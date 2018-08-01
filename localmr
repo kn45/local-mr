@@ -56,7 +56,7 @@ if [ -z "$REDUCER" ]; then  # MAP-ONLY TASK
     part_id=${m_in_part##*.}
     map_proc="cat $W_DIR/$part_bn | $MAPPER > $W_DIR/m.out.$part_id"
     (>&2 echo "Start Mapper-"$part_id)
-    bash -c "$map_proc" &
+    sh -c "$map_proc" &
   done
   wait
   # Output to single file
@@ -87,7 +87,7 @@ else  # REDUCE-INVOLVED TASK
       "
     echo $map_proc > $W_DIR/m.exec.$part_id
     (>&2 echo "Start Mapper-"$part_id"...")
-    bash $W_DIR/m.exec.$part_id &
+    sh $W_DIR/m.exec.$part_id &
   done
   wait
   # Partition
@@ -108,7 +108,7 @@ else  # REDUCE-INVOLVED TASK
     part_id=${r_in_part##*.}
     red_proc="cat $W_DIR/$part_bn | $REDUCER > $W_DIR/r.out.$part_id"
     (>&2 echo "Start Reducer-"$part_id"...")
-    bash -c "$red_proc" &
+    sh -c "$red_proc" &
   done
   wait
   # Output to single file
