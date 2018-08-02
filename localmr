@@ -53,7 +53,6 @@ mrlog "Number of reducer: "$NRED
 rm -rf $W_DIR
 mkdir $W_DIR
 
-
 if [ -z "$REDUCER" ]; then  # MAP-ONLY TASK
   # Map
   cat $INPUT | split -d -n r/$NMAP - $W_DIR/m.in.
