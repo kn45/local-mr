@@ -1,5 +1,11 @@
 #!/bin/sh
 
+mrlog()
+{
+  fmt="["`date +"%Y-%m-%d %H:%M:%S"`"]"
+  (>&2 echo $fmt" "$1)
+}
+
 for i in "$@"; do
 case $i in
   -i=*|--input=*)
@@ -38,10 +44,10 @@ O_DIR=`dirname $OUTPUT`
 O_FN=`basename $OUTPUT`
 W_DIR=$O_DIR/.localmr_tmp_$O_FN
 
-(>&2 echo "Input file: "$INPUT)
-(>&2 echo "Output file: "$OUTPUT)
-(>&2 echo "Number of mapper: "$NMAP)
-(>&2 echo "Number of reducer: "$NRED)
+mrlog "Input file: "$INPUT
+mrlog "Output file: "$OUTPUT
+mrlog "Number of mapper: "$NMAP
+mrlog "Number of reducer: "$NRED
 
 # prepare
 rm -rf $W_DIR
@@ -55,7 +61,8 @@ if [ -z "$REDUCER" ]; then  # MAP-ONLY TASK
     part_bn=`basename $m_in_part`
     part_id=${m_in_part##*.}
     map_proc="cat $W_DIR/$part_bn | $MAPPER > $W_DIR/m.out.$part_id"
-    (>&2 echo "Start Mapper-"$part_id)
+    mrlog "Start Mapper-"$part_id
+    mrlog "Start Mapper-"$part_id
     sh -c "$map_proc" &
   done
   wait
@@ -86,13 +93,13 @@ else  # REDUCE-INVOLVED TASK
       '
       "
     echo $map_proc > $W_DIR/m.exec.$part_id
-    (>&2 echo "Start Mapper-"$part_id"...")
+    mrlog "Start Mapper-"$part_id"..."
     sh $W_DIR/m.exec.$part_id &
   done
   wait
   # Partition
   for bucket_id in `ls -1 $W_DIR/m.out.* | awk -F'.' '{print $NF}' | sort | uniq`; do
-    (>&2 echo "Start Shuffle bucket-"$bucket_id"...")
+    mrlog "Start Shuffle bucket-"$bucket_id"..."
     (
       for bucket_file in `ls -1 $W_DIR/m.out.*.$bucket_id`; do
         bf_bn=`basename $bucket_file`
@@ -107,7 +114,7 @@ else  # REDUCE-INVOLVED TASK
     part_bn=`basename $r_in_part`
     part_id=${r_in_part##*.}
     red_proc="cat $W_DIR/$part_bn | $REDUCER > $W_DIR/r.out.$part_id"
-    (>&2 echo "Start Reducer-"$part_id"...")
+    mrlog "Start Reducer-"$part_id"..."
     sh -c "$red_proc" &
   done
   wait
@@ -117,4 +124,4 @@ else  # REDUCE-INVOLVED TASK
   rm -rf $W_DIR
 fi
 
-(>&2 echo "MR Job Finish! Output file: "$OUTPUT)
+mrlog "MR Job End! Output file: "$OUTPUT

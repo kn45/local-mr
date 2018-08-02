@@ -1,5 +1,5 @@
-rm ./test_mr_input1
-rm ./test_mr_input2
+rm -f ./test_mr_input1
+rm -f ./test_mr_input2
 for i in {1..2000}; do
   echo ${RANDOM:0:2}"	test	line" >> ./test_mr_input1
   echo ${RANDOM:0:2}"	test	line" >> ./test_mr_input2
