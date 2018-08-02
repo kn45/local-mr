@@ -61,7 +61,6 @@ if [ -z "$REDUCER" ]; then  # MAP-ONLY TASK
     part_id=${m_in_part##*.}
     map_proc="cat $W_DIR/$part_bn | $MAPPER > $W_DIR/m.out.$part_id"
     mrlog "Start Mapper-"$part_id
-    mrlog "Start Mapper-"$part_id
     sh -c "$map_proc" &
   done
   wait
