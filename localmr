@@ -82,11 +82,11 @@ else  # REDUCE-INVOLVED TASK
         print \$0 > wdir\"/m.out.\"partid\".\"bucket_id
       }
       function get_hash(fld) {
-        cmd = sprintf(\"echo %s | md5sum\", fld);
+        cmd = sprintf(\"echo -n %s | md5sum\", fld);
         cmd | getline output;
         close(cmd)
         split(output, arr, \" \");
-        return sprintf(\"%d\", \"0x\"arr[1])
+        return sprintf(\"%d\", \"0x\"substr(arr[1], 1, 10))
       }
       '
       "
