@@ -17,6 +17,8 @@ A simple tool for streaming map-reduce task running on local machine with multip
   reducer command
 - -b, --nred, --nreducer:  
   number of reducer
+- -c, --combine:
+  whether combine the output to a single file, default true
 
 
 ## Example
@@ -28,7 +30,8 @@ localmr \
 --mapper="awk '{print \$0}'" \
 --reducer="cat" \
 --nmapper=2 \
---nreducer=5
+--nreducer=5 \
+--combine=false
 ```  
 Or refer to
 ```shell

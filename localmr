@@ -26,6 +26,9 @@ case $i in
   -b=*|--nreducer=*|--nred=*)
   NRED="${i#*=}"
   ;;
+  -c=*|--combine=*)
+  COMBINE="${i#*=}"
+  ;;
   --)
   shift
   ;;
@@ -38,37 +41,50 @@ done
 if [ -z "$NRED" ]; then
   NRED="None"
 fi
+if [ -z "$COMBINE" ]; then
+  COMBINE="true"
+fi
 
 I_DIR=`dirname $INPUT`
 O_DIR=`dirname $OUTPUT`
 O_FN=`basename $OUTPUT`
 W_DIR=$O_DIR/.localmr_tmp_$O_FN
 
-mrlog "Input file: "$INPUT
-mrlog "Output file: "$OUTPUT
+mrlog "Input Path: "$INPUT
+mrlog "Output Path: "$OUTPUT
 mrlog "Number of mapper: "$NMAP
 mrlog "Number of reducer: "$NRED
 
 # prepare
 rm -rf $W_DIR
 mkdir $W_DIR
+rm -rf $OUTPUT
 
-if [ -z "$REDUCER" ]; then  # MAP-ONLY TASK
+#===== MAP-ONLY TASK
+if [ -z "$REDUCER" ]; then
   # Map
   cat $INPUT | split -d -n r/$NMAP - $W_DIR/m.in.
   for m_in_part in `ls $W_DIR/m.in.*`; do
     part_bn=`basename $m_in_part`
     part_id=${m_in_part##*.}
-    map_proc="cat $W_DIR/$part_bn | $MAPPER > $W_DIR/m.out.$part_id"
+    map_proc="cat $W_DIR/$part_bn | $MAPPER > $W_DIR/part-$part_id"
     mrlog "Start Mapper-"$part_id
     sh -c "$map_proc" &
   done
   wait
-  # Output to single file
-  cat $W_DIR/m.out.* > $OUTPUT
+  # Output
+  if [ "$COMBINE" == "false" ]; then  # To a directory
+    mkdir $OUTPUT
+    mv $W_DIR/part-* $OUTPUT/
+    rm -rf $OUTPUT/_SUCCESS; touch $OUTPUT/_SUCCESS
+  else  # To single file
+    cat $W_DIR/part-* > $OUTPUT
+  fi
   # Cleanup
   rm -rf $W_DIR
-else  # REDUCE-INVOLVED TASK
+
+#===== REDUCE-INVOLVED TASK
+else
   # Map
   cat $INPUT | split -d -n r/$NMAP - $W_DIR/m.in.
   for m_in_part in `ls $W_DIR/m.in.*`; do
@@ -79,6 +95,7 @@ else  # REDUCE-INVOLVED TASK
       '
       {
         bucket_id = int(get_hash(\$1)) % nred;
+        bucket_id = sprintf(\"%02d\", bucket_id);
         print \$0 > wdir\"/m.out.\"partid\".\"bucket_id
       }
       function get_hash(fld) {
@@ -111,15 +128,20 @@ else  # REDUCE-INVOLVED TASK
   for r_in_part in `ls $W_DIR/r.in.*`; do
     part_bn=`basename $r_in_part`
     part_id=${r_in_part##*.}
-    red_proc="cat $W_DIR/$part_bn | $REDUCER > $W_DIR/r.out.$part_id"
+    red_proc="cat $W_DIR/$part_bn | $REDUCER > $W_DIR/part-$part_id"
     mrlog "Start Reducer-"$part_id"..."
     sh -c "$red_proc" &
   done
   wait
-  # Output to single file
-  cat $W_DIR/r.out.* > $OUTPUT
+  if [ "$COMBINE" == "false" ]; then  # To a directory
+    mkdir $OUTPUT
+    mv $W_DIR/part-* $OUTPUT/
+    rm -rf $OUTPUT/_SUCCESS; touch $OUTPUT/_SUCCESS
+  else  # To single file
+    cat $W_DIR/part-* > $OUTPUT
+  fi
   # Cleanup
   rm -rf $W_DIR
 fi
 
-mrlog "MR Job End! Output file: "$OUTPUT
+mrlog "MR Job End! Output Path: "$OUTPUT
